@@ -1,0 +1,34 @@
+# Rames: image resmi siap pakai — tanpa build, tanpa container_name/name.
+# Ganti image/tag dan path volume sesuai aplikasi.
+services:
+  web:
+    image: example/app:1.0.0
+    restart: unless-stopped
+
+    # Port container saja. Rames mengalokasikan host port otomatis.
+    ports:
+      - "8080"
+
+    environment:
+      APP_URL: ${APP_URL}
+      APP_ENV: production
+      TZ: ${TZ}
+
+    volumes:
+      - web-data:/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  web-data:
