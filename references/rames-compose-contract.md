@@ -50,10 +50,13 @@ Override env sengaja paling akhir agar nilai dari UI Rames menang atas env di re
 
 ## 4. Environment
 
+- **Daftar variabel diturunkan dari pemakaian di kode**, bukan dari menyalin `.env.example` (berkas contoh sering basi). Jalankan `python3 scripts/scan-env-usage.py . --strict` dan tindak lanjuti hasilnya sebelum menulis `environment:`; detail aturan di `SKILL.md` Langkah 1.
 - Tulis referensi `${VAR}` di compose; nilai asli diisi lewat tab **Environment** Rames.
+- Path yang dibaca aplikasi harus **path di dalam container** (mis. `/app/public`), bukan path host yang biasa tertulis di `.env.example` developer.
+- Host/port service internal yang selalu ada di compose (DB, Redis) di-hardcode ke nama service; var yang sudah di-hardcode jangan dibiarkan sebagai `${VAR}` yang bisa salah diisi.
 - Rames menyimpan env di `database/env/<app>.env` (0600) dan menyuntikkan `environment:` literal ke **setiap** service melalui override terakhir.
 - Jangan mengandalkan isolasi env per service untuk rahasia — semua service menerima env yang sama.
-- `.env.example` hanya dokumentasi nama variabel; **jangan** menaruh nilai rahasia.
+- `.env.example` hanya dokumentasi nama variabel; **jangan** menaruh nilai rahasia, dan isinya harus sinkron dengan compose.
 - Hindari `env_file:` untuk rahasia; Rames sudah menangani env. Jika tetap dipakai, berkas harus ada di repo dan tidak berisi secret.
 - Jangan menaruh secret di `ARG`/`ENV` Dockerfile — nilai itu tersimpan di layer image.
 
@@ -160,6 +163,8 @@ Jika hasil akan dijadikan template di `templates/<slug>/`:
 - [ ] Tepat satu service web publik; DB/worker tanpa `ports:`.
 - [ ] State memakai named volume; tidak ada bind absolut host.
 - [ ] Env memakai `${VAR}`; `.env.example` tanpa rahasia.
+- [ ] Semua var yang dibaca kode sudah ada di compose (`scripts/scan-env-usage.py . --strict` lulus).
+- [ ] Tidak ada var env mati yang diteruskan tanpa alasan.
 - [ ] `restart`, `healthcheck`, `logging` ada.
 - [ ] Image di-pin dan multi-arch.
 - [ ] `python3 scripts/validate-compose.py docker-compose.yml --mode <git|compose|template>` lulus.
